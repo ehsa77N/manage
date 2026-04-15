@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>حسابداری دوکان </title>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+         :root {
+            --bg-color: #f5f5f7;
+            --card-bg: #ffffff;
+            --text-dark: #1d1d1f;
+            --text-gray: #a1a1b4;
+            --border-color: #e5e5ea;
+            --income-color: #34c759;
+            --expense-color: #ff3b30;
+            --button-bg: #1d1d1f;
+            --hover-bg: #f8f8fc;
+            --icon-edit: #007aff;
+            --icon-delete: #ff3b30;
+            --stat-card-bg: #f9f9fb;
+        }
+        
+        * {
+            box-sizing: border-box;
+            font-family: 'Vazirmatn', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+        
+        .app-container {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 36px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
+            padding: 2rem 1.5rem;
+        }
+        
+        /* آمار */
+        .stats-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            flex: 1;
+            background: var(--stat-card-bg);
+            border-radius: 28px;
+            padding: 1.2rem 0.8rem;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+        
+        .stat-card p {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-gray);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-number {
+            font-size: 1.6rem;
+            font-weight: 800;
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 5px;
+        }
+        
+        .income-stat { color: var(--income-color); }
+        .expense-stat { color: var(--expense-color); }
+        .currency-small { font-size: 0.75rem; font-weight: 400; color: var(--text-gray); }
+        
+        /* فرم */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+            margin-bottom: 2rem;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 0.9rem 1.2rem;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            font-size: 0.9rem;
+            background-color: #fafafa;
+            outline: none;
+        }
+        
+        input:focus, select:focus {
+            background-color: #fff;
+            border-color: #a1a1a6;
+        }
+        
+        button {
+            width: 100%;
+            padding: 0.9rem;
+            background-color: var(--button-bg);
+            color: #fff;
+            border: none;
+            border-radius: 28px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+        
+        button:hover { opacity: 0.9; }
+        button:active { transform: scale(0.97); }
+        
+        /* جستجو */
+        .search-wrapper {
+            margin-bottom: 1rem;
+            position: relative;
+        }
+        
+        .search-wrapper i {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-gray);
+        }
+        
+        #searchTransactionInput {
+            padding-right: 2.6rem;
+            background-color: #fafafc;
+            border-radius: 32px;
+        }
+        
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.6rem;
+        }
+        
+        .history-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        /* لیست تراکنش‌ها با ارتفاع ثابت برای اسکرول */
+        .transaction-list-wrapper {
+            position: relative;
+        }
+        
+        .transaction-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 380px;
+            overflow-y: auto;
+            padding: 0.2rem;
+        }
+        
+        .transaction-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .transaction-list::-webkit-scrollbar-thumb {
+            background: #d2d2d7;
+            border-radius: 4px;
+        }
+        
+        /* صفحه‌بندی */
+        .pagination-controls {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-top: 1.2rem;
+            padding-top: 0.8rem;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .pagination-controls button {
+            flex: 1;
+            background-color: #f0f0f2;
+            color: var(--text-dark);
+            padding: 0.6rem;
+            font-size: 0.85rem;
+            margin-top: 0;
+        }
+        
+        .pagination-controls button:active {
+            transform: scale(0.97);
+        }
+        
+        .pagination-controls button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        
+        .pagination-info {
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-gray);
+            margin-top: 0.5rem;
+        }
+        
+        /* آیتم تراکنش */
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            background-color: #ffffff;
+            border-radius: 24px;
+            transition: all 0.2s ease-in-out;
+            border: 1px solid transparent;
+        }
+        
+        .transaction-item:hover {
+            background-color: var(--hover-bg);
+            border-color: var(--border-color);
+        }
+        
+        .tx-info {
+            flex: 1;
+        }
+        
+        .tx-info h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+        
+        .tx-info span {
+            font-size: 0.65rem;
+            color: var(--text-gray);
+            background: #f2f2f5;
+            padding: 0.15rem 0.5rem;
+            border-radius: 30px;
+            display: inline-block;
+        }
+        
+        .tx-amount {
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-left: 0.5rem;
+        }
+        
+        .amount-income { color: var(--income-color); }
+        .amount-expense { color: var(--text-dark); }
+        
+        .tx-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+        
+        .transaction-item:hover .tx-actions {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .action-icon {
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #fff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+        
+        .action-icon.edit-icon { color: var(--icon-edit); }
+        .action-icon.delete-icon { color: var(--icon-delete); }
+        .action-icon:hover {
+            transform: scale(1.08);
+            background-color: #f0f0f2;
+        }
+        
+        .empty-state-message {
+            text-align: center;
+            color: var(--text-gray);
+            font-size: 0.85rem;
+            padding: 1.5rem;
+            background: #fafafc;
+            border-radius: 28px;
+        }
+        
+        .status-badge {
+            font-size: 0.7rem;
+            background: #34c75920;
+            color: #2c6e3c;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+        }
+        
+        .status-badge.offline {
+            background: #ff3b3020;
+            color: #b33;
+        }
+        
+        .error-banner {
+            background: #ff3b3010;
+            border: 1px solid #ff3b3030;
+            border-radius: 16px;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            font-size: 0.75rem;
+            color: #b33;
+            text-align: center;
+        }
+        
+        @media (max-width: 480px) {
+            .app-container { padding: 1.3rem; }
+            .stat-number { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-container">
+        
+        <div id="errorBanner" class="error-banner" style="display: none;">
+            ⚠️ خطا در اتصال به دیتابیس! قوانین Firebase را تنظیم کنید.
+        </div>
+        
+        <div class="stats-row">
+            <div class="stat-card">
+                <p>کل دریافتی‌ها</p>
+                <div class="stat-number income-stat">
+                    <span id="totalIncomeAmount">0</span>
+                    <span class="currency-small">افغانی</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <p>کل پرداختی‌ها</p>
+                <div class="stat-number expense-stat">
+                    <span id="totalExpenseAmount">0</span>
+                    <span class="currency-small">افغانی</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <input type="text" id="descInput" placeholder="عنوان تراکنش">
+            <input type="number" id="amountInput" placeholder="مبلغ">
+            <select id="typeInput">
+                <option value="expense">پرداختی</option>
+               <option value="income">دریافتی</option>
+            </select>
+            <button onclick="addTransaction()">ثبت تراکنش</button>
+        </div>
+
+        <div class="history-header">
+            <h3>تراکنش‌های اخیر</h3>
+        </div>
+
+        <div class="search-wrapper">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchTransactionInput" placeholder="جستجو در تراکنش‌ها ...">
+        </div>
+
+        <div class="transaction-list-wrapper">
+            <div class="transaction-list" id="transactionsContainer">
+                <div class="empty-state-message">در حال بارگذاری...</div>
+            </div>
+            
+            <!-- دکمه‌های صفحه‌بندی -->
+            <div class="pagination-controls" id="paginationControls" style="display: none;">
+                <button id="prevPageBtn" onclick="changePage(-1)">← قبلی</button>
+                <button id="nextPageBtn" onclick="changePage(1)">بعدی →</button>
+            </div>
+            <div class="pagination-info" id="paginationInfo"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue, push, set, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4ASK0klbVbvSHkzSVp-nNLzZeGizkdGw",
+            authDomain: "confirm-links-system.firebaseapp.com",
+            databaseURL: "https://confirm-links-system-default-rtdb.firebaseio.com",
+            projectId: "confirm-links-system",
+            storageBucket: "confirm-links-system.firebasestorage.app",
+            messagingSenderId: "868617452704",
+            appId: "1:868617452704:web:4ca9c2a9c270e43212ddc5",
+            measurementId: "G-KCL756GTZ9"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const transactionsRef = ref(database, 'transactions');
+        
+        let allTransactions = [];      // همه تراکنش‌ها از دیتابیس
+        let filteredTransactions = []; // تراکنش‌های فیلتر شده بر اساس جستجو
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        
+        // DOM elements
+        const totalIncomeSpan = document.getElementById('totalIncomeAmount');
+        const totalExpenseSpan = document.getElementById('totalExpenseAmount');
+        const transactionsContainer = document.getElementById('transactionsContainer');
+        const descInput = document.getElementById('descInput');
+        const amountInput = document.getElementById('amountInput');
+        const typeSelect = document.getElementById('typeInput');
+        const searchInput = document.getElementById('searchTransactionInput');
+        const onlineStatusSpan = document.getElementById('onlineStatus');
+        const errorBanner = document.getElementById('errorBanner');
+        const paginationControls = document.getElementById('paginationControls');
+        const paginationInfo = document.getElementById('paginationInfo');
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        // به‌روزرسانی آمار کل
+        function updateStats() {
+            let totalIncome = 0;
+            let totalExpense = 0;
+            for (let tx of allTransactions) {
+                if (tx.type === 'income') {
+                    totalIncome += tx.amount;
+                } else {
+                    totalExpense += tx.amount;
+                }
+            }
+            totalIncomeSpan.innerText = totalIncome.toLocaleString('fa-AF');
+            totalExpenseSpan.innerText = totalExpense.toLocaleString('fa-AF');
+        }
+        
+        // فیلتر بر اساس جستجو
+        function applySearchFilter() {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            if (searchTerm === "") {
+                filteredTransactions = [...allTransactions];
+            } else {
+                filteredTransactions = allTransactions.filter(tx => tx.desc.toLowerCase().includes(searchTerm));
+            }
+            currentPage = 1;
+            renderCurrentPage();
+        }
+        
+        // رندر صفحه جاری
+        function renderCurrentPage() {
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageTransactions = filteredTransactions.slice(startIndex, endIndex);
+            
+            // رندر لیست
+            transactionsContainer.innerHTML = '';
+            
+            if (pageTransactions.length === 0) {
+                const emptyMsg = document.createElement('div');
+                emptyMsg.className = 'empty-state-message';
+                if (filteredTransactions.length === 0 && allTransactions.length === 0) {
+                    emptyMsg.innerText = 'هنوز تراکنشی ثبت نشده است.';
+                } else if (filteredTransactions.length === 0 && allTransactions.length > 0) {
+                    emptyMsg.innerText = 'هیچ تراکنشی با این جستجو یافت نشد.';
+                } else {
+                    emptyMsg.innerText = 'هیچ تراکنشی وجود ندارد.';
+                }
+                transactionsContainer.appendChild(emptyMsg);
+                paginationControls.style.display = 'none';
+                paginationInfo.innerText = '';
+                return;
+            }
+            
+            // نمایش تراکنش‌های صفحه جاری (مرتب شده بر اساس زمان نزولی)
+            const sorted = [...pageTransactions].sort((a, b) => b.timestamp - a.timestamp);
+            
+            for (let tx of sorted) {
+                const isIncome = (tx.type === 'income');
+                const amountFormatted = tx.amount.toLocaleString('fa-AF');
+                const sign = isIncome ? '+' : '-';
+                const amountClass = isIncome ? 'amount-income' : 'amount-expense';
+                const typeLabel = isIncome ? 'دریافتی' : 'پرداختی';
+                
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'transaction-item';
+                
+                itemDiv.innerHTML = `
+                    <div class="tx-info">
+                        <h4>${escapeHtml(tx.desc)}</h4>
+                        <span>${typeLabel}</span>
+                    </div>
+                    <div class="tx-amount ${amountClass}">
+                        ${sign} ${amountFormatted}
+                    </div>
+                    <div class="tx-actions">
+                        <i class="fas fa-pen action-icon edit-icon" title="ویرایش"></i>
+                        <i class="fas fa-trash-alt action-icon delete-icon" title="حذف"></i>
+                    </div>
+                `;
+                
+                const editIcon = itemDiv.querySelector('.edit-icon');
+                const deleteIcon = itemDiv.querySelector('.delete-icon');
+                
+                editIcon.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    handleEditTransaction(tx);
+                });
+                
+                deleteIcon.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    handleDeleteTransaction(tx.firebaseId);
+                });
+                
+                transactionsContainer.appendChild(itemDiv);
+            }
+            
+            // نمایش دکمه‌های صفحه‌بندی
+            const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+            if (totalPages > 1) {
+                paginationControls.style.display = 'flex';
+                const prevBtn = document.getElementById('prevPageBtn');
+                const nextBtn = document.getElementById('nextPageBtn');
+                if (prevBtn) prevBtn.disabled = (currentPage === 1);
+                if (nextBtn) nextBtn.disabled = (currentPage === totalPages);
+                paginationInfo.innerText = `صفحه ${currentPage} از ${totalPages} (${filteredTransactions.length} تراکنش)`;
+            } else {
+                paginationControls.style.display = 'none';
+                paginationInfo.innerText = filteredTransactions.length > 0 ? `${filteredTransactions.length} تراکنش` : '';
+            }
+        }
+        
+        // تغییر صفحه
+        window.changePage = function(direction) {
+            const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+            const newPage = currentPage + direction;
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                renderCurrentPage();
+                // اسکرول به بالای لیست
+                const container = document.getElementById('transactionsContainer');
+                if (container) container.scrollTop = 0;
+            }
+        };
+        
+        // اضافه کردن تراکنش
+        window.addTransaction = async function() {
+            const desc = descInput.value.trim();
+            const amountRaw = amountInput.value.trim();
+            const amount = parseFloat(amountRaw);
+            const type = typeSelect.value;
+            
+            if (!desc) {
+                alert('لطفاً عنوان تراکنش را وارد کنید.');
+                return;
+            }
+            if (isNaN(amount) || amount <= 0) {
+                alert('لطفاً مبلغ صحیح (بزرگتر از صفر) وارد کنید.');
+                return;
+            }
+            
+            const newTransaction = {
+                desc: desc,
+                amount: amount,
+                type: type,
+                timestamp: Date.now()
+            };
+            
+            try {
+                const newRef = push(transactionsRef);
+                await set(newRef, newTransaction);
+                descInput.value = '';
+                amountInput.value = '';
+                typeSelect.value = 'expense';
+            } catch (error) {
+                console.error("Error:", error);
+                alert('خطا در ثبت تراکنش');
+                errorBanner.style.display = 'block';
+            }
+        };
+        
+        // حذف تراکنش
+        window.handleDeleteTransaction = async function(firebaseId) {
+            if (!firebaseId) return;
+            if (confirm('آیا از حذف این تراکنش اطمینان دارید؟')) {
+                try {
+                    const transactionRef = ref(database, `transactions/${firebaseId}`);
+                    await remove(transactionRef);
+                } catch (error) {
+                    alert('خطا در حذف تراکنش');
+                }
+            }
+        };
+        
+        // ویرایش تراکنش
+        window.handleEditTransaction = async function(transaction) {
+            const firebaseId = transaction.firebaseId;
+            if (!firebaseId) return;
+            
+            const newDesc = prompt('ویرایش عنوان تراکنش:', transaction.desc);
+            if (newDesc !== null && newDesc.trim() !== "") {
+                transaction.desc = newDesc.trim();
+            } else if (newDesc === "") {
+                alert('عنوان نمی‌تواند خالی بماند.');
+                return;
+            }
+            
+            let newAmount = prompt('ویرایش مبلغ (عدد مثبت):', transaction.amount);
+            if (newAmount !== null) {
+                const parsedAmount = parseFloat(newAmount);
+                if (!isNaN(parsedAmount) && parsedAmount > 0) {
+                    transaction.amount = parsedAmount;
+                } else if (newAmount !== "") {
+                    alert('مبلغ وارد شده نامعتبر است.');
+                }
+            }
+            
+            try {
+                const transactionRef = ref(database, `transactions/${firebaseId}`);
+                await set(transactionRef, {
+                    desc: transaction.desc,
+                    amount: transaction.amount,
+                    type: transaction.type,
+                    timestamp: transaction.timestamp
+                });
+            } catch (error) {
+                alert('خطا در ویرایش تراکنش');
+            }
+        };
+        
+        // گوش دادن به تغییرات Firebase
+        onValue(transactionsRef, (snapshot) => {
+            const data = snapshot.val();
+            allTransactions = [];
+            
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    const tx = data[key];
+                    allTransactions.push({
+                        firebaseId: key,
+                        desc: tx.desc || '',
+                        amount: tx.amount || 0,
+                        type: tx.type || 'expense',
+                        timestamp: tx.timestamp || Date.now()
+                    });
+                });
+            }
+            
+            updateStats();
+            applySearchFilter(); // این تابع filteredTransactions را به‌روز کرده و رندر می‌کند
+            onlineStatusSpan.classList.remove('offline');
+            errorBanner.style.display = 'none';
+        }, (error) => {
+            console.error("Firebase error:", error);
+            onlineStatusSpan.classList.add('offline');
+            errorBanner.style.display = 'block';
+        });
+        
+        // جستجو زنده
+        searchInput.addEventListener('input', () => {
+            applySearchFilter();
+        });
+        
+        // کلید Enter برای ثبت تراکنش
+        descInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') window.addTransaction(); });
+        amountInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') window.addTransaction(); });
+        
+        // تعریف توابع در window برای دسترسی از دکمه‌های HTML
+        window.changePage = window.changePage;
+        window.addTransaction = window.addTransaction;
+        window.handleDeleteTransaction = window.handleDeleteTransaction;
+        window.handleEditTransaction = window.handleEditTransaction;
+    </script>
+</body>
+
+</html>
